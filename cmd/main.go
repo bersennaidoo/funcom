@@ -3,6 +3,9 @@ package main
 import (
 	"log"
 
+	"github.com/bersennaidoo/funcom/application/rest/handlers"
+	"github.com/bersennaidoo/funcom/application/rest/server"
+	"github.com/bersennaidoo/funcom/infrastructure/repositories"
 	"github.com/bersennaidoo/funcom/physical/config"
 	"github.com/bersennaidoo/funcom/physical/dbconn"
 )
@@ -12,6 +15,13 @@ func main() {
 	config := config.InitConfig(config.GetConfigFileName())
 
 	log.Println("Initializing database")
-	_ = dbconn.InitDatabase(config)
-	log.Println("Database Initialized")
+	dbclient := dbconn.InitDatabase(config)
+
+	urepo := repositories.NewUsersRepository(dbclient)
+	uhandler := handlers.NewUsersHandler(urepo)
+
+	srv := server.New(config, uhandler)
+
+	srv.InitRouter()
+	srv.Start()
 }
