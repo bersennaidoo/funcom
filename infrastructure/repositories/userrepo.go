@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/bersennaidoo/funcom/domain/models"
 )
@@ -25,9 +24,23 @@ func (urp *UsersRepository) UserCreate(newUser models.User) (sql.Result, error) 
 
 	q, err := urp.dbclient.Exec(query)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 
 	return q, nil
+}
+
+func (urp *UsersRepository) UsersRetrieve(id string) (*models.User, error) {
+
+	ReadUser := models.User{}
+	err := urp.dbclient.QueryRow("select * from users where user_id=?", id).Scan(&ReadUser.ID,
+		&ReadUser.Name, &ReadUser.First, &ReadUser.Last, &ReadUser.Email)
+	switch {
+	case err == sql.ErrNoRows:
+		return nil, err
+	case err != nil:
+		return nil, err
+	}
+
+	return &ReadUser, nil
 }

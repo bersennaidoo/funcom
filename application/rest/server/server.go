@@ -26,6 +26,7 @@ func (hts *HttpServer) InitRouter() {
 
 	hts.router = mux.NewRouter()
 	hts.router.HandleFunc("/api/users", hts.usersHandler.UserCreate).Methods("GET")
+	hts.router.HandleFunc("/api/users/{id:[0-9]+}", hts.usersHandler.UsersRetrieve).Methods("GET")
 	http.Handle("/", hts.router)
 }
 

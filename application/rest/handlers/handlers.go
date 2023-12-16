@@ -7,6 +7,7 @@ import (
 
 	"github.com/bersennaidoo/funcom/domain/models"
 	"github.com/bersennaidoo/funcom/infrastructure/repositories"
+	"github.com/gorilla/mux"
 )
 
 type UsersHandler struct {
@@ -19,7 +20,7 @@ func NewUsersHandler(usersRepository *repositories.UsersRepository) *UsersHandle
 	}
 }
 
-func (usr *UsersHandler) UserCreate(w http.ResponseWriter, r *http.Request) {
+func (usrh *UsersHandler) UserCreate(w http.ResponseWriter, r *http.Request) {
 
 	NewUser := models.User{}
 	NewUser.Name = r.FormValue("user")
@@ -32,9 +33,25 @@ func (usr *UsersHandler) UserCreate(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Something went wrong!")
 	}
 
-	q, err := usr.usersRepository.UserCreate(NewUser)
+	q, err := usrh.usersRepository.UserCreate(NewUser)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(q)
+}
+
+func (usrh *UsersHandler) UsersRetrieve(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Pragma", "no-cache")
+
+	urlParams := mux.Vars(r)
+	id := urlParams["id"]
+
+	user, err := usrh.usersRepository.UsersRetrieve(id)
+	if err != nil {
+		fmt.Printf("%w", err)
+	}
+
+	output, _ := json.Marshal(user)
+	fmt.Fprintf(w, string(output))
 }
