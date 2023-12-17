@@ -16,9 +16,9 @@ func NewUsersRepository(dbclient *sql.DB) *UsersRepository {
 	}
 }
 
-func (urp *UsersRepository) UserCreate(newUser models.User) (sql.Result, error) {
+func (urp *UsersRepository) UserCreate(newUser models.User, fileString string) (sql.Result, error) {
 
-	query := "INSERT INTO users set user_nickname='" + newUser.Name +
+	query := "INSERT INTO users set user_image='" + fileString + "', user_nickname='" + newUser.Name +
 		"', user_first='" + newUser.First + "', user_last='" + newUser.Last +
 		"', user_email='" + newUser.Email + "'"
 
@@ -30,11 +30,10 @@ func (urp *UsersRepository) UserCreate(newUser models.User) (sql.Result, error) 
 	return q, nil
 }
 
-func (urp *UsersRepository) UsersRetrieve(id string) (*models.User, error) {
+func (urp *UsersRepository) UsersRetrieve() (*models.Users, error) {
 
-	ReadUser := models.User{}
-	err := urp.dbclient.QueryRow("select * from users where user_id=?", id).Scan(&ReadUser.ID,
-		&ReadUser.Name, &ReadUser.First, &ReadUser.Last, &ReadUser.Email)
+	rows, err := urp.dbclient.Query("select * from users LIMIT 10")
+
 	switch {
 	case err == sql.ErrNoRows:
 		return nil, err
@@ -42,5 +41,13 @@ func (urp *UsersRepository) UsersRetrieve(id string) (*models.User, error) {
 		return nil, err
 	}
 
-	return &ReadUser, nil
+	Response := models.Users{}
+
+	for rows.Next() {
+		user := models.User{}
+		rows.Scan(&user.ID, &user.Name, &user.First, &user.Last, &user.Email)
+		Response.Users = append(Response.Users, user)
+	}
+
+	return &Response, nil
 }
