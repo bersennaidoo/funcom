@@ -16,18 +16,15 @@ func NewUsersRepository(dbclient *sql.DB) *UsersRepository {
 	}
 }
 
-func (urp *UsersRepository) UserCreate(newUser models.User, fileString string) (sql.Result, error) {
+func (urp *UsersRepository) UserCreate(newUser models.User) error {
 
-	query := "INSERT INTO users set user_image='" + fileString + "', user_nickname='" + newUser.Name +
-		"', user_first='" + newUser.First + "', user_last='" + newUser.Last +
-		"', user_email='" + newUser.Email + "'"
-
-	q, err := urp.dbclient.Exec(query)
+	_, err := urp.dbclient.Exec("INSERT INTO funcom.users(user_name, user_first, user_last, user_email) VALUES(?, ?, ?, ?)",
+		newUser.Name, newUser.First, newUser.Last, newUser.Email)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return q, nil
+	return nil
 }
 
 func (urp *UsersRepository) UsersRetrieve() (*models.Users, error) {
@@ -50,4 +47,22 @@ func (urp *UsersRepository) UsersRetrieve() (*models.Users, error) {
 	}
 
 	return &Response, nil
+}
+
+func (urp *UsersRepository) UsersUpdate(uid, email string) (int, error) {
+
+	var userCount int
+	err := urp.dbclient.QueryRow("SELECT count(user_id) from users where user_id=?",
+		uid).Scan(&userCount)
+	if err != nil {
+		return userCount, nil
+	}
+
+	_, err = urp.dbclient.Exec("UPDATE users set user_email=? where user_id=?",
+		email, uid)
+	if err != nil {
+		return userCount, err
+	}
+
+	return userCount, nil
 }

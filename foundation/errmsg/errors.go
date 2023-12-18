@@ -1,4 +1,4 @@
-package handlers
+package errmsg
 
 import (
 	"net/http"
@@ -12,16 +12,20 @@ func ErrorMessages(err int64) (int, int, string) {
 	errorCode := 0
 	switch err {
 	case 1062:
-		errorMessage = "Duplicate entry"
+		errorMessage = http.StatusText(409)
 		errorCode = 10
 		statusCode = http.StatusConflict
+	default:
+		errorMessage = http.StatusText(int(err))
+		errorCode = 0
+		statusCode = int(err)
 	}
 
 	return errorCode, statusCode, errorMessage
 
 }
 
-func dbErrorParse(err string) (string, int64) {
+func DbErrorParse(err string) (string, int64) {
 	Parts := strings.Split(err, ":")
 	errorMessage := Parts[1]
 	Code := strings.Split(Parts[0], "Error ")
