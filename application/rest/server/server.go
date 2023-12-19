@@ -49,7 +49,7 @@ func (hts *HttpServer) Start() {
 	}()
 	wg.Add(1)
 	go func() {
-		err := http.ListenAndServeTLS(httpsaddr, "server.crt", "server.key", http.HandlerFunc(handlers.SecureRequest))
+		err := http.ListenAndServeTLS(httpsaddr, "./documentation/certs/server.crt", "./documentation/certs/server.key", http.HandlerFunc(handlers.SecureRequest))
 		log.Fatal(err)
 		wg.Done()
 	}()

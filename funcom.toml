@@ -13,7 +13,7 @@ driver_name = "mysql"
 
 [http]
 
-http_addr = ":4000"
+http_addr = ":3000"
 
 [https]
 
