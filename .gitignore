@@ -20,5 +20,5 @@
 # Go workspace file
 go.work
 
-server.key
-server.crt
+documentation/certs/server.key
+documentation/certs/server.crt
