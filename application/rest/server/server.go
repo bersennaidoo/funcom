@@ -1,8 +1,10 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/bersennaidoo/funcom/application/rest/handlers"
 	"github.com/gorilla/mux"
@@ -33,11 +35,25 @@ func (hts *HttpServer) InitRouter() {
 }
 
 func (hts *HttpServer) Start() {
-	srvaddr := hts.config.GetString("http.server_address")
+	wg := sync.WaitGroup{}
+	httpaddr := hts.config.GetString("http.http_addr")
+	httpsaddr := hts.config.GetString("https.https_addr")
+	fmt.Println(httpsaddr)
+	fmt.Println(httpaddr)
 
-	log.Println("Server started on", srvaddr)
-	err := http.ListenAndServe(srvaddr, nil)
-	if err != nil {
-		log.Fatalf("Error while starting HTTP server: %v", err)
-	}
+	wg.Add(1)
+	go func() {
+		err := http.ListenAndServe(httpaddr, http.HandlerFunc(handlers.RedirectNonSecure))
+		log.Fatal(err)
+		wg.Done()
+	}()
+	wg.Add(1)
+	go func() {
+		err := http.ListenAndServeTLS(httpsaddr, "server.crt", "server.key", http.HandlerFunc(handlers.SecureRequest))
+		log.Fatal(err)
+		wg.Done()
+	}()
+
+	wg.Wait()
+
 }
